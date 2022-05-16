@@ -1,0 +1,81 @@
+version: '3.8'
+
+#volumes:
+#  vol-emqx-data:
+#    name: sensores-maxine-data
+#  vol-emqx-etc:
+#    name: sensores-maxine-etc
+#  vol-emqx-log:
+#    name: sensores-maxine-log
+
+services:
+  emqx:
+    container_name: sensores_maxine-emqx
+    image: emqx/emqx:4.2.3
+    restart: always
+    ports:
+      - ${emqxdashport}:18083
+      - 8083:8083
+    #volumes:
+    #  - vol-emqx-data:/opt/emqx/data
+    #  - vol-emqx-etc:/opt/emqx/etc
+    #  - vol-emqx-log:/opt/emqx/log
+    links:
+      - mongo
+    environment:
+      TZ: "Europe/Madrid"
+
+      EMQX_NAME: sensores-maxine
+      EMQX_HOST: 127.0.0.1
+
+      EMQX_LISTENER__TCP__EXTERNAL__MAX_CONNECTIONS: 10
+      
+      # DASHBOARD SETTINGS
+      EMQX_DASHBOARD__DEFAULT_USER__PASSWORD: ${dashpass}
+
+      # DEFAULT APP SECRET
+      EMQX_MANAGEMENT__DEFAULT_APLICATION_SECRET: ${EMQX_DEFAULT_APLICATION_SECRET}
+
+      
+      EMQX_ALLOW_ANONYMOUS: "false"
+      EMQX_NOMATCH: "deny"
+
+      # MONGO CONNECTION
+      EMQX_AUTH__MONGO__TYPE: single
+      EMQX_AUTH__MONGO__TOPOLOGY__POOL_SIZE: 1
+      EMQX_AUTH__MONGO__TOPOLOGY__MAX_OVERFLOW: 0
+
+      EMQX_AUTH__MONGO__SERVER: "mongo:27017"
+      EMQX_AUTH__MONGO__POOL: 8
+
+      EMQX_AUTH__MONGO__LOGIN: ${mongo_user_name}
+      EMQX_AUTH__MONGO__PASSWORD: ${mongo_user_password}
+      EMQX_AUTH__MONGO__AUTH_SOURCE: admin
+
+      EMQX_AUTH__MONGO__DATABASE: "maxine"
+      EMQX_AUTH__MONGO__AUTH_QUERY__COLLECTION: "emqxauthrules"
+
+      EMQX_AUTH__MONGO__SUPER_QUERY__COLLECTION: "emqxauthrules"
+      EMQX_AUTH__MONGO__SUPER_QUERY__SUPER_FIELD: "is_superuser"
+      EMQX_AUTH__MONGO__SUPER_QUERY__SELECTOR: "username=%u"
+      EMQX_AUTH__MONGO__SUPER_QUERY: "off"
+
+      EMQX_AUTH__MONGO__AUTH_QUERY__PASSWORD_HASH: plain
+      EMQX_AUTH__MONGO__AUTH_QUERY__PASSWORD_FIELD: "password"
+      EMQX_AUTH__MONGO__AUTH_QUERY__SELECTOR: "username=%u"
+
+
+
+
+  mongo:
+    container_name: sensores_maxine-mongo
+    image: mongo:4.4
+    restart: always
+    environment:
+      TZ: "Europe/Madrid"
+      MONGO_INITDB_ROOT_USERNAME: ${mongo_user_name}
+      MONGO_INITDB_ROOT_PASSWORD: ${mongo_user_password}
+    volumes:
+      - ../data/mongo:/data/db
+    ports:
+      - 27017:27017
