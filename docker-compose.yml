@@ -101,4 +101,4 @@ services:
       - 3001:3001
     volumes:
       - ../data/backend:/src
-    command: dev
+    command: start
