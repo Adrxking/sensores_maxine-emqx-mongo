@@ -101,4 +101,7 @@ services:
       - 3001:3001
     volumes:
       - ../data/backend:/src
-    command: start
+    command: bash -c "
+      cd /src
+      npm run start
+      "
