@@ -86,3 +86,12 @@ services:
       - ../data/mongo:/data/db
     ports:
       - 27017:27017
+
+  website:
+    container_name: sensores_maxine-website
+    image: nginx:1.13-alpine
+    restart: always
+    ports:
+      - 8555:80
+    volumes:
+      - ../data/website:/usr/share/nginx/html    
